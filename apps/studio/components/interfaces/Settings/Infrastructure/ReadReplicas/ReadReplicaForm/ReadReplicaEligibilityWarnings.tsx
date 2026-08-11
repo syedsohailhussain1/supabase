@@ -1,11 +1,17 @@
 import { SupportCategories } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import Link from 'next/link'
+import { parseAsBoolean, useQueryState } from 'nuqs'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
 
+import {
+  recommendComputeParser,
+  RECOMMENDED_COMPUTE_FOR_READ_REPLICAS,
+  type RecommendedComputeForReadReplicas,
+} from '../recommendCompute'
 import { useCheckEligibilityDeployReplica } from './useCheckEligibilityDeployReplica'
 import { SupportLink } from '@/components/interfaces/Support/SupportLink'
 import { DocsButton } from '@/components/ui/DocsButton'
@@ -21,6 +27,16 @@ export const ReadReplicaEligibilityWarnings = () => {
   const { ref: projectRef } = useParams()
   const { data: org } = useSelectedOrganizationQuery()
   const { data: project } = useSelectedProjectQuery()
+  const isFreePlan = org?.plan?.id === 'free'
+
+  const [, setAddReplica] = useQueryState(
+    'addReplica',
+    parseAsBoolean.withDefault(false).withOptions({
+      history: 'push',
+      clearOnDefault: true,
+    })
+  )
+  const [, setRecommendCompute] = useQueryState('recommendCompute', recommendComputeParser)
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
 
@@ -61,6 +77,11 @@ export const ReadReplicaEligibilityWarnings = () => {
       setRefetchInterval(false)
     }
   }, [projectDetail?.is_physical_backups_enabled, isProjectDetailSuccess])
+
+  const handleRecommendCompute = (size: RecommendedComputeForReadReplicas) => {
+    setAddReplica(false)
+    setRecommendCompute(size)
+  }
 
   if (hasOverdueInvoices) {
     return (
@@ -132,13 +153,22 @@ export const ReadReplicaEligibilityWarnings = () => {
           This is to ensure that read replicas can keep up with the primary databases' activities.
         </p>
         <div className="flex items-center gap-x-2 mt-2">
-          <UpgradePlanButton
-            variant="default"
-            plan="Pro"
-            addon="computeSize"
-            source="read-replicas"
-            featureProposition="deploy Read Replicas"
-          />
+          {isFreePlan ? (
+            <UpgradePlanButton
+              variant="default"
+              plan="Pro"
+              addon="computeSize"
+              source="read-replicas"
+              featureProposition="deploy Read Replicas"
+            />
+          ) : (
+            <Button
+              variant="default"
+              onClick={() => handleRecommendCompute(RECOMMENDED_COMPUTE_FOR_READ_REPLICAS.minimum)}
+            >
+              Change to Small compute
+            </Button>
+          )}
           <DocsButton href={`${DOCS_URL}/guides/platform/read-replicas#prerequisites`} />
         </div>
       </Admonition>
@@ -229,16 +259,15 @@ export const ReadReplicaEligibilityWarnings = () => {
               <span className="text-foreground">{READ_REPLICAS_MAX_COUNT}</span> replicas if your
               project is on an XL compute or higher.
             </p>
-            <UpgradePlanButton
+            <Button
               variant="default"
-              plan="Pro"
-              addon="computeSize"
-              source="read-replicas"
-              featureProposition="deploy Read Replicas"
               className="mt-2"
+              onClick={() =>
+                handleRecommendCompute(RECOMMENDED_COMPUTE_FOR_READ_REPLICAS.unlockMaxReplicas)
+              }
             >
-              Change compute size
-            </UpgradePlanButton>
+              Change to XL compute
+            </Button>
           </>
         )}
       </Admonition>

@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useQueryState } from 'nuqs'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { CloudProvider } from 'shared-data'
 import { toast } from 'sonner'
@@ -35,6 +36,7 @@ import {
   RESTRICTED_COMPUTE_FOR_THROUGHPUT_ON_GP3,
 } from './ui/DiskManagement.constants'
 import { NoticeBar } from './ui/NoticeBar'
+import { recommendComputeParser } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/recommendCompute'
 import { PADDING_CLASSES } from '@/components/layouts/Scaffold'
 import { UpgradeToPro } from '@/components/ui/UpgradeToPro'
 import {
@@ -62,7 +64,17 @@ import {
 } from '@/hooks/misc/useSelectedProject'
 import { GB, PROJECT_STATUS } from '@/lib/constants'
 
-export function DiskManagementForm({ chartsClassName }: { chartsClassName?: string } = {}) {
+export function DiskManagementForm({
+  chartsClassName,
+  overviewExtra,
+  beforeScaling,
+}: {
+  chartsClassName?: string
+  /** Rendered above usage charts in the overview block (for example topology). */
+  overviewExtra?: ReactNode
+  /** Rendered between overview and the Scaling section (for example read replicas). */
+  beforeScaling?: ReactNode
+} = {}) {
   const { ref: projectRef } = useParams()
   const { data: project, isPending: isProjectPending } = useSelectedProjectQuery()
   const { data: org } = useSelectedOrganizationQuery()
@@ -156,6 +168,40 @@ export function DiskManagementForm({ chartsClassName }: { chartsClassName?: stri
     mode: 'onBlur',
     reValidateMode: 'onChange',
   })
+
+  const [recommendCompute, setRecommendCompute] = useQueryState(
+    'recommendCompute',
+    recommendComputeParser
+  )
+
+  // From Add read replica eligibility: close sheet, pre-select compute, scroll to Scaling.
+  useEffect(() => {
+    if (!recommendCompute) return
+
+    form.setValue('computeSize', recommendCompute, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+    setRecommendCompute(null)
+
+    const timeoutId = setTimeout(() => {
+      computeSettingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+
+    return () => clearTimeout(timeoutId)
+  }, [form, recommendCompute, setRecommendCompute])
+
+  // Deep links from billing / UpgradePlanButton (e.g. #compute).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.hash !== '#compute') return
+
+    const timeoutId = setTimeout(() => {
+      computeSettingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [])
 
   const modifiedComputeSize = useWatch({ control: form.control, name: 'computeSize' })
 
@@ -391,7 +437,8 @@ export function DiskManagementForm({ chartsClassName }: { chartsClassName?: stri
       <form id="disk-compute-form" onSubmit={form.handleSubmit(onSubmit)}>
         <PageContainer size="default" className="pb-16">
           <PageSection>
-            <PageSectionContent>
+            <PageSectionContent className="flex flex-col gap-y-6">
+              {overviewExtra}
               <ComputeAndDiskUsageCharts className={chartsClassName} />
             </PageSectionContent>
           </PageSection>
@@ -419,6 +466,8 @@ export function DiskManagementForm({ chartsClassName }: { chartsClassName?: stri
               />
             </div>
           )}
+
+          {beforeScaling}
 
           <PageSection>
             <PageSectionMeta>
