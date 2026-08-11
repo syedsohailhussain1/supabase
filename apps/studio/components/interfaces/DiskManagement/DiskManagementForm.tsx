@@ -385,6 +385,7 @@ export function DiskManagementForm({
       shouldDirty: true,
       shouldValidate: true,
     })
+    void form.trigger(['provisionedIOPS', 'throughput'])
     setRecommendCompute(null)
 
     const timeoutId = setTimeout(() => {
@@ -401,6 +402,7 @@ export function DiskManagementForm({
         shouldDirty: true,
         shouldValidate: true,
       })
+      void form.trigger(['provisionedIOPS', 'throughput'])
       window.setTimeout(() => {
         computeSettingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 150)

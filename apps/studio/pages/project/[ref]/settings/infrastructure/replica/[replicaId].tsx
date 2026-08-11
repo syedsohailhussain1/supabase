@@ -30,6 +30,11 @@ import {
 } from '@/data/read-replicas/replicas-status-query'
 import type { NextPageWithLayout } from '@/types'
 
+const STATUS_BADGE_VARIANT: Record<string, 'success' | 'destructive' | 'default'> = {
+  Healthy: 'success',
+  Failed: 'destructive',
+}
+
 const InfrastructureReadReplicaPage: NextPageWithLayout = () => {
   const router = useRouter()
   const { ref, replicaId } = useParams()
@@ -85,17 +90,7 @@ const InfrastructureReadReplicaPage: NextPageWithLayout = () => {
           <ScaffoldTitle>Read Replica</ScaffoldTitle>
           {isSuccessDatabases && (
             <>
-              <Badge
-                variant={
-                  statusLabel === 'Healthy'
-                    ? 'success'
-                    : statusLabel === 'Failed'
-                      ? 'destructive'
-                      : 'default'
-                }
-              >
-                {statusLabel}
-              </Badge>
+              <Badge variant={STATUS_BADGE_VARIANT[statusLabel] ?? 'default'}>{statusLabel}</Badge>
               {isInTransition && <Loader2 size={14} className="animate-spin" />}
             </>
           )}

@@ -148,8 +148,8 @@ export const SmoothstepEdge = ({
           strokeWidth,
           opacity,
           strokeDasharray: dashArray,
+          animation: shouldAnimate ? 'dashdraw 0.5s linear infinite' : undefined,
         }}
-        className={cn(shouldAnimate && 'animate-edge-flow')}
       />
       <EdgeLabelRenderer>
         <div

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   requestRecommendCompute,
@@ -6,15 +6,20 @@ import {
 } from '@/components/interfaces/Settings/Infrastructure/ReadReplicas/recommendCompute'
 
 describe('recommendCompute bridge', () => {
+  afterEach(() => {
+    // Clear any leftover subscriber between tests.
+    subscribeRecommendCompute(() => {})()
+  })
+
   it('delivers the recommended size to the active subscriber', () => {
     const listener = vi.fn()
     const unsubscribe = subscribeRecommendCompute(listener)
 
-    requestRecommendCompute('ci_small')
+    expect(requestRecommendCompute('ci_small')).toBe(true)
     expect(listener).toHaveBeenCalledWith('ci_small')
 
     unsubscribe()
-    requestRecommendCompute('ci_xlarge')
+    expect(requestRecommendCompute('ci_xlarge')).toBe(false)
     expect(listener).toHaveBeenCalledTimes(1)
   })
 
@@ -25,7 +30,7 @@ describe('recommendCompute bridge', () => {
     subscribeRecommendCompute(first)
     subscribeRecommendCompute(second)
 
-    requestRecommendCompute('ci_xlarge')
+    expect(requestRecommendCompute('ci_xlarge')).toBe(true)
 
     expect(first).not.toHaveBeenCalled()
     expect(second).toHaveBeenCalledWith('ci_xlarge')

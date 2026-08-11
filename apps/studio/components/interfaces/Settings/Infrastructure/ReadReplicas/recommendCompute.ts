@@ -34,6 +34,9 @@ export function subscribeRecommendCompute(listener: RecommendComputeListener) {
   }
 }
 
+/** Returns true when a subscriber received the recommendation. */
 export function requestRecommendCompute(size: RecommendedComputeForReadReplicas) {
-  recommendComputeListener?.(size)
+  if (!recommendComputeListener) return false
+  recommendComputeListener(size)
+  return true
 }

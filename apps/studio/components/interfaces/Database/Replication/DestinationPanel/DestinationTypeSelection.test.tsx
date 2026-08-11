@@ -156,7 +156,7 @@ describe('DestinationTypeSelection', () => {
     customRender(<DestinationTypeSelection />, { nuqs: { searchParams: { edit: '1' } } })
 
     expect(await screen.findByRole('combobox')).toBeDisabled()
-    expect(screen.queryByText('Looking for read replicas?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Read replicas have moved')).not.toBeInTheDocument()
   })
 
   test('shows a callout pointing read replicas to Infrastructure in create mode', async () => {
@@ -170,7 +170,7 @@ describe('DestinationTypeSelection', () => {
 
     customRender(<DestinationTypeSelection />)
 
-    expect(await screen.findByText('Looking for read replicas?')).toBeInTheDocument()
+    expect(await screen.findByText('Read replicas have moved')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Add read replica' })).toHaveAttribute(
       'href',
       expect.stringContaining('/settings/infrastructure?addReplica=true')
@@ -189,6 +189,6 @@ describe('DestinationTypeSelection', () => {
     customRender(<DestinationTypeSelection />)
 
     expect(await screen.findByText('Select a destination type')).toBeInTheDocument()
-    expect(screen.queryByText('Looking for read replicas?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Read replicas have moved')).not.toBeInTheDocument()
   })
 })
