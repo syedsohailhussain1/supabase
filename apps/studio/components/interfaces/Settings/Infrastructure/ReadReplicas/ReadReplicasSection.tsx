@@ -129,12 +129,6 @@ export const ReadReplicasSection = () => {
               </Button>
             </EmptyStatePresentational>
           )}
-
-          {hasReplicas && (
-            <p className="text-sm text-foreground-light">
-              Read replicas must be removed before upgrading Postgres or restoring this project.
-            </p>
-          )}
         </PageSectionContent>
       </PageSection>
 
