@@ -8,8 +8,8 @@ import { Button } from 'ui'
 import { Admonition } from 'ui-patterns/Admonition'
 
 import {
-  recommendComputeParser,
   RECOMMENDED_COMPUTE_FOR_READ_REPLICAS,
+  requestRecommendCompute,
   type RecommendedComputeForReadReplicas,
 } from '../recommendCompute'
 import { useCheckEligibilityDeployReplica } from './useCheckEligibilityDeployReplica'
@@ -36,7 +36,6 @@ export const ReadReplicaEligibilityWarnings = () => {
       clearOnDefault: true,
     })
   )
-  const [, setRecommendCompute] = useQueryState('recommendCompute', recommendComputeParser)
 
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false)
 
@@ -79,8 +78,10 @@ export const ReadReplicaEligibilityWarnings = () => {
   }, [projectDetail?.is_physical_backups_enabled, isProjectDetailSuccess])
 
   const handleRecommendCompute = (size: RecommendedComputeForReadReplicas) => {
+    // Notify the infrastructure form before closing the sheet. Closing first
+    // unmounts this component and previously dropped a follow-up URL write.
+    requestRecommendCompute(size)
     setAddReplica(false)
-    setRecommendCompute(size)
   }
 
   if (hasOverdueInvoices) {

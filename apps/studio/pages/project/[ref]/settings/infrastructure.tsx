@@ -21,7 +21,7 @@ const InfrastructureSettings: NextPageWithLayout = () => {
           <PageHeaderSummary>
             <PageHeaderTitle>Infrastructure</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure compute, disk, and read replicas for your project.
+              Configure compute, disk, and read replicas
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>

@@ -15,3 +15,25 @@ export const recommendComputeParser = parseAsStringEnum<RecommendedComputeForRea
   RECOMMENDED_COMPUTE_FOR_READ_REPLICAS.minimum,
   RECOMMENDED_COMPUTE_FOR_READ_REPLICAS.unlockMaxReplicas,
 ]).withOptions({ history: 'replace', clearOnDefault: true })
+
+type RecommendComputeListener = (size: RecommendedComputeForReadReplicas) => void
+
+/**
+ * In-page bridge from the Add read replica sheet → DiskManagementForm.
+ * Avoids a nuqs race where closing the sheet unmounts the CTA before a second
+ * query-param write can land.
+ */
+let recommendComputeListener: RecommendComputeListener | null = null
+
+export function subscribeRecommendCompute(listener: RecommendComputeListener) {
+  recommendComputeListener = listener
+  return () => {
+    if (recommendComputeListener === listener) {
+      recommendComputeListener = null
+    }
+  }
+}
+
+export function requestRecommendCompute(size: RecommendedComputeForReadReplicas) {
+  recommendComputeListener?.(size)
+}
