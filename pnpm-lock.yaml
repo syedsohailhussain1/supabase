@@ -981,6 +981,12 @@ importers:
       '@stripe/sync-engine':
         specifier: 1.0.32
         version: 1.0.32(@types/node@22.13.14)(supports-color@8.1.1)
+      '@supabase-dx/config':
+        specifier: workspace:*
+        version: link:../../packages/project-config
+      '@supabase-dx/env-vars':
+        specifier: workspace:*
+        version: link:../../packages/env-vars
       '@supabase/auth-js':
         specifier: 'catalog:'
         version: 2.112.3
@@ -1215,6 +1221,9 @@ importers:
       shared-data:
         specifier: workspace:*
         version: link:../../packages/shared-data
+      smol-toml:
+        specifier: ^1.6.1
+        version: 1.6.1
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -2374,6 +2383,19 @@ importers:
         specifier: 'catalog:'
         version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@22.13.14)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(jsdom@28.1.0(@noble/hashes@1.8.0)(supports-color@8.1.1))(msw@2.11.3(@types/node@22.13.14)(typescript@6.0.2))(vite@8.0.16(@types/node@22.13.14)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.77.4)(terser@5.39.0)(tsx@4.22.4)(yaml@2.9.0))
 
+  packages/env-vars:
+    dependencies:
+      '@supabase-dx/config':
+        specifier: workspace:*
+        version: link:../project-config
+    devDependencies:
+      tsconfig:
+        specifier: workspace:*
+        version: link:../tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
   packages/eslint-config-supabase:
     devDependencies:
       '@tanstack/eslint-plugin-query':
@@ -2513,6 +2535,24 @@ importers:
         version: 8.0.16(@types/node@22.13.14)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.77.4)(terser@5.39.0)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
+        version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@22.13.14)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(jsdom@28.1.0(@noble/hashes@1.8.0)(supports-color@8.1.1))(msw@2.11.3(@types/node@22.13.14)(typescript@6.0.2))(vite@8.0.16(@types/node@22.13.14)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.77.4)(terser@5.39.0)(tsx@4.22.4)(yaml@2.9.0))
+
+  packages/project-config:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.13.14
+      jsonv-ts:
+        specifier: ^0.10.1
+        version: 0.10.1(typescript@6.0.2)
+      tsconfig:
+        specifier: workspace:*
+        version: link:../tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+      vitest:
+        specifier: ^4.0.18
         version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@22.13.14)(@vitest/coverage-v8@4.1.4)(@vitest/ui@4.1.4)(jsdom@28.1.0(@noble/hashes@1.8.0)(supports-color@8.1.1))(msw@2.11.3(@types/node@22.13.14)(typescript@6.0.2))(vite@8.0.16(@types/node@22.13.14)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.77.4)(terser@5.39.0)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/shared-data:
@@ -12983,6 +13023,11 @@ packages:
   jsonrepair@3.5.0:
     resolution: {integrity: sha512-SavvDsUP9Xnqo2MoC6Wl6zNyX3f+I5199hRbXBtAITyP2NTPyAgyx5xM0bgcIljRjzsIvOBANbgfWe8XXlyeLA==}
     hasBin: true
+
+  jsonv-ts@0.10.1:
+    resolution: {integrity: sha512-IfuXZigNjLQzW4X7dLRTpwd1pD1lk86SoXBWmLdF+VE6SE4PcXevWs8c/bPl7qVrZXhh8lYwbTF7TFtgO2/jXg==}
+    peerDependencies:
+      typescript: ^5.0.0
 
   jsrsasign@11.1.1:
     resolution: {integrity: sha512-6w95OOXH8DNeGxakqLndBEqqwQ6A70zGaky1oxfg8WVLWOnghTfJsc5Tknx+Z88MHSb1bGLcqQHImOF8Lk22XA==}
@@ -29610,6 +29655,12 @@ snapshots:
       graceful-fs: 4.2.11
 
   jsonrepair@3.5.0: {}
+
+  jsonv-ts@0.10.1(typescript@6.0.2):
+    dependencies:
+      typescript: 6.0.2
+    optionalDependencies:
+      hono: 4.12.31
 
   jsrsasign@11.1.1: {}
 
