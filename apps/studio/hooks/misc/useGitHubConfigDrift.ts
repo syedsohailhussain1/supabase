@@ -1,10 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'common'
 import { useCallback, useMemo } from 'react'
 
-import { useAuthConfigQuery } from '@/data/auth/auth-config-query'
 import { useBranchesQuery } from '@/data/branches/branches-query'
 import type { Branch } from '@/data/branches/branches-query'
 import { useGitHubConfigQuery } from '@/data/config/github-config-query'
+import { projectConfigV2QueryOptions } from '@/data/config/project-config-v2-query'
 import { useProjectGitHubConnectionQuery } from '@/data/integrations/github-connections-query'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from '@/lib/constants'
@@ -76,9 +77,14 @@ export function useSelectedGitHubConfigDrift() {
   const queriesEnabled =
     shouldLoad && branchesQuery.isSuccess && connectionQuery.isSuccess && hasConnection
 
-  const authConfigQuery = useAuthConfigQuery(
-    { projectRef },
-    { enabled: queriesEnabled, staleTime: 30_000 }
+  const projectConfigQuery = useQuery({
+    ...projectConfigV2QueryOptions({ projectRef }),
+    enabled: queriesEnabled,
+    staleTime: 30_000,
+  })
+  const dashboardAuthConfig = useMemo(
+    () => toDashboardAuthConfig(projectConfigQuery.data?.auth),
+    [projectConfigQuery.data?.auth]
   )
   const githubConfigQuery = useGitHubConfigQuery(
     { connectionId: connection?.id, repository: connection?.repository.name, branch: gitBranch },
@@ -98,13 +104,13 @@ export function useSelectedGitHubConfigDrift() {
   const summary = useMemo(
     () =>
       getAuthConfigDriftSummary({
-        dashboardConfig: authConfigQuery.data,
+        dashboardConfig: dashboardAuthConfig,
         githubConfig: effectiveConfigResult?.config,
       }),
-    [authConfigQuery.data, effectiveConfigResult?.config]
+    [dashboardAuthConfig, effectiveConfigResult?.config]
   )
   const isReady =
-    shouldLoad && hasConnection && authConfigQuery.isSuccess && githubConfigQuery.isSuccess
+    shouldLoad && hasConnection && projectConfigQuery.isSuccess && githubConfigQuery.isSuccess
   const source = githubConfigQuery.data?.source
   const hasSourceBranchFallback =
     gitBranch !== undefined && source !== undefined && source.branch !== gitBranch
@@ -115,7 +121,7 @@ export function useSelectedGitHubConfigDrift() {
       projectQuery.refetch(),
       branchesQuery.refetch(),
       connectionQuery.refetch(),
-      authConfigQuery.refetch(),
+      projectConfigQuery.refetch(),
       githubConfigQuery.refetch(),
     ])
 
@@ -133,25 +139,25 @@ export function useSelectedGitHubConfigDrift() {
       (shouldLoad &&
         (branchesQuery.isPending ||
           connectionQuery.isPending ||
-          (hasConnection && (authConfigQuery.isPending || githubConfigQuery.isPending)))),
+          (hasConnection && (projectConfigQuery.isPending || githubConfigQuery.isPending)))),
     isFetching:
       projectQuery.isFetching ||
       (shouldLoad &&
         (branchesQuery.isFetching ||
           connectionQuery.isFetching ||
-          (hasConnection && (authConfigQuery.isFetching || githubConfigQuery.isFetching)))),
+          (hasConnection && (projectConfigQuery.isFetching || githubConfigQuery.isFetching)))),
     isError:
       projectQuery.isError ||
       (shouldLoad &&
         (branchesQuery.isError ||
           connectionQuery.isError ||
-          authConfigQuery.isError ||
+          projectConfigQuery.isError ||
           githubConfigQuery.isError)),
     error:
       projectQuery.error ??
       branchesQuery.error ??
       connectionQuery.error ??
-      authConfigQuery.error ??
+      projectConfigQuery.error ??
       githubConfigQuery.error,
     hasDrift: isReady && summary.driftedFields.length > 0,
     hasConfigurationIssues: isReady && issueCount > 0,
@@ -159,4 +165,14 @@ export function useSelectedGitHubConfigDrift() {
     summary,
     refetch,
   }
+}
+
+// The v2 project config's `auth` map is keyed by lowercased GoTrue setting name
+// (e.g. `site_url`); the drift comparator and its field maps use the classic
+// upper-cased GoTrueConfigResponse field names (e.g. `SITE_URL`).
+function toDashboardAuthConfig(
+  auth: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
+  if (!auth) return undefined
+  return Object.fromEntries(Object.entries(auth).map(([key, value]) => [key.toUpperCase(), value]))
 }

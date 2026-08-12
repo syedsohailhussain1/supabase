@@ -29,4 +29,6 @@ export const configKeys = {
   deploymentMode: () => ['deployment-mode'] as const,
   postgresConfig: (projectRef: string | undefined) =>
     ['projects', projectRef, 'postgres-config'] as const,
+  projectConfigV2: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'config-v2'] as const,
 }
